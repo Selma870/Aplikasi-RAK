@@ -75,4 +75,48 @@
       perlakuan = as.factor(rv$data[[input$kol_perlakuan]]),
       kelompok  = as.factor(rv$data[[input$kol_kelompok]]),
       respon    = as.numeric(as.character(rv$data[[input$kol_respon]]))
+      # --- Blok kesimpulan Faktor KELOMPOK ---
+    blok_kelompok <- if (rv$anova_p_kelompok <= input$alpha) {
+      paste0("
+      <div style='padding:12px; background:#eaf4fc; border-left:5px solid #3498db;'>
+        <h4><b>Kesimpulan - Faktor Kelompok:</b></h4>
+        <p>Terdapat <b>perbedaan yang signifikan</b> antar kelompok (<i>p-value = ", format(rv$anova_p_kelompok, 5), " < ", input$alpha, "</i>).</p>
+        <p>Karena H0 ditolak, maka dengan menggunakan tingkat signifikansi ", input$alpha * 100, "% dapat disimpulkan bahwa setidaknya ada satu kelompok yang memberikan efek berbeda terhadap respon.</p>
+
+        <h4><b>Interpretasi:</b></h4>
+        <p>Pengelompokan (blocking) yang dilakukan <b>efektif</b> dalam menjelaskan keragaman data, sehingga penggunaan RAK pada percobaan ini sudah tepat.</p>
+      </div>
+      ")
+    } else {
+      paste0("
+      <div style='padding:12px; background:#f4f4f4; border-left:5px solid #95a5a6;'>
+        <h4><b>Kesimpulan - Faktor Kelompok:</b></h4>
+        <p>Tidak ditemukan perbedaan yang signifikan antar kelompok (<i>p-value = ", format(rv$anova_p_kelompok, 5), " >= ", input$alpha, "</i>).</p>
+
+        <h4><b>Interpretasi:</b></h4>
+        <p>Faktor kelompok <b>tidak terbukti berpengaruh nyata</b> terhadap respon. Pengelompokan mungkin kurang diperlukan pada data ini, namun kesimpulan untuk faktor perlakuan di atas tetap valid secara statistik.</p>
+      </div>
+      ")
+    }
+    
+    HTML(paste0(blok_perlakuan, blok_kelompok))
+  })
+  
+  output$lanjut_uji <- renderUI({
+    req(rv$anova_p <= input$alpha)
+    radioButtons("uji_lanjut", "Lakukan uji lanjut?", c("Tidak", "Ya"))
+  })
+  
+  output$lanjut_isi <- renderUI({
+    req(rv$hasil_anova, rv$anova_p <= input$alpha)
+    if (input$uji_lanjut == "Ya") {
+      tagList(
+        selectInput("jenis_uji", "Jenis Uji Lanjut:", choices = c("BNT", "BNJ", "Duncan")),
+        verbatimTextOutput("uji_lanjut_output"),
+        htmlOutput("interpretasi_lanjut")
+      )
+    } else {
+      h4("Anda tidak memilih untuk uji lanjut.")
+    }
+  })
     
