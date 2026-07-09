@@ -554,3 +554,98 @@ server <- function(input, output, session) {
           }
         }
         
+      # Interpretasi umum untuk uji lain (BNT, BNJ)
+      nilai_kritis <- NA
+      stat <- hasil$statistics
+      if (!is.null(stat)) {
+        if (!is.null(stat$LSD)) {
+          nilai_kritis <- stat$LSD
+        } else if (!is.null(stat$HSD)) {
+          nilai_kritis <- stat$HSD
+        } else if (!is.null(stat$MSD)) {
+          nilai_kritis <- stat$MSD
+        }
+      }
+      
+      if (is.na(nilai_kritis)) {
+        return(HTML("<div style='color:red;'>Nilai kritis tidak ditemukan. Tidak bisa lanjut interpretasi.</div>"))
+      }
+      
+      tbl <- data.frame(Pasangan = character(), Selisih = numeric(), Kritis = numeric(), BedaNyata = character(), stringsAsFactors = FALSE)
+      
+      for (i in 1:(length(perlakuan) - 1)) {
+        for (j in (i + 1):length(perlakuan)) {
+          nama1 <- perlakuan[i]
+          nama2 <- perlakuan[j]
+          
+          cek1 <- nama1 %in% names(means)
+          cek2 <- nama2 %in% names(means)
+          if (is.na(cek1) || is.na(cek2) || !cek1 || !cek2) next
+          
+          m1 <- means[nama1]
+          m2 <- means[nama2]
+          if (is.na(m1) || is.na(m2)) next
+          
+          selisih <- abs(m1 - m2)
+          beda <- ifelse(selisih > nilai_kritis, "Ya", "Tidak")
+          
+          tbl <- rbind(tbl, data.frame(
+            Pasangan = paste(nama1, "vs", nama2),
+            Selisih = round(selisih, 3),
+            Kritis = round(nilai_kritis, 3),
+            BedaNyata = beda,
+            stringsAsFactors = FALSE
+          ))
+        }
+      }
+      
+      table_html <- paste0(
+        "<h4><b>Tabel Perbandingan Antar Perlakuan</b></h4>",
+        "<div style='overflow-x:auto;'>",
+        "<table style='border-collapse: separate; border-spacing: 10px 6px; width: 100%;'>",
+        "<thead style='background:#f2f2f2;'>",
+        "<tr><th>Pasangan</th><th>Selisih</th><th>Nilai Kritis</th><th>Berbeda Nyata?</th></tr>",
+        "</thead><tbody>"
+      )
+      for (k in 1:nrow(tbl)) {
+        table_html <- paste0(table_html,
+                             "<tr>",
+                             "<td>", tbl$Pasangan[k], "</td>",
+                             "<td align='center'>", tbl$Selisih[k], "</td>",
+                             "<td align='center'>", tbl$Kritis[k], "</td>",
+                             "<td align='center'>", tbl$BedaNyata[k], "</td>",
+                             "</tr>")
+      }
+      table_html <- paste0(table_html, "</table><br>")
+      
+      grup <- hasil$groups
+      grup <- grup[order(grup$groups), , drop = FALSE]
+      
+      teks_grup <- paste0(
+        "<h4><b>Interpretasi Hasil Uji ", input$jenis_uji, "</b></h4>",
+        "<p>Perlakuan dikelompokkan berdasarkan huruf yang <b>berbeda</b>. Jika dua perlakuan memiliki huruf berbeda, maka <b>berbeda signifikan</b>.</p>",
+        "<ul>"
+      )
+      for (i in 1:nrow(grup)) {
+        teks_grup <- paste0(teks_grup, "<li><b>", rownames(grup)[i], "</b> (rata-rata = ", round(grup$respon[i], 3),
+                            ") -> grup <b>", grup$groups[i], "</b></li>")
+      }
+      teks_grup <- paste0(teks_grup, "</ul>")
+      
+      terbaik <- rownames(grup)[which.max(grup$respon)]
+      saran <- paste0(
+        "<h4><b>Saran:</b></h4>",
+        "<p>Perlakuan <b>", terbaik, "</b> memiliki rata-rata tertinggi dan termasuk dalam grup signifikan tertinggi. Ini bisa dipilih sebagai perlakuan terbaik <i>(jika berbeda nyata dari yang lain).</i></p>"
+      )
+      
+      HTML(paste0(
+        "<div style='padding:10px; background:#f0f8ff; border-left:5px solid #3498db'>",
+        table_html,
+        teks_grup,
+        saran,
+        "</div>"
+      ))
+    })
+  })
+}
+shinyApp(ui, server)
