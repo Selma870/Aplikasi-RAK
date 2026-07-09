@@ -40,6 +40,36 @@
       rv$valid <- FALSE
       return()
     }
+     # --- Blok kesimpulan Faktor PERLAKUAN ---
+    blok_perlakuan <- if (rv$anova_p <= input$alpha) {
+      paste0("
+      <div style='padding:12px; background:#e3fcec; border-left:5px solid #2ecc71; margin-bottom:14px;'>
+        <h4><b>Kesimpulan - Faktor Perlakuan:</b></h4>
+        <p>Terdapat <b>perbedaan yang signifikan</b> antara perlakuan (<i>p-value = ", format(rv$anova_p, 5), " < ", input$alpha, "</i>).</p>
+        <p>Karena H0 ditolak, maka dengan menggunakan tingkat signifikansi ", input$alpha * 100, "% dapat disimpulkan bahwa setidaknya ada satu perlakuan yang berbeda pengaruhnya terhadap respon.</p>
+
+        <h4><b>Interpretasi:</b></h4>
+        <p>Perlakuan yang diberikan <b>memiliki pengaruh nyata</b> terhadap nilai respon, setelah efek kelompok diperhitungkan dalam model.</p>
+
+        <h4><b>Saran:</b></h4>
+        <p>Lanjutkan ke <b>Uji Lanjut</b> untuk mengetahui pasangan perlakuan mana yang berbeda secara signifikan.</p>
+      </div>
+      ")
+    } else {
+      paste0("
+      <div style='padding:12px; background:#fdecea; border-left:5px solid #e74c3c; margin-bottom:14px;'>
+        <h4><b>Kesimpulan - Faktor Perlakuan:</b></h4>
+        <p>Tidak ditemukan perbedaan yang signifikan antar perlakuan (<i>p-value = ", format(rv$anova_p, 5), " >= ", input$alpha, "</i>).</p>
+
+        <h4><b>Interpretasi:</b></h4>
+        <p>Perlakuan yang diberikan <b>tidak terbukti mempengaruhi</b> nilai respon secara statistik.</p>
+
+        <h4><b>Saran:</b></h4>
+        <p>Tinjau kembali desain eksperimen atau coba uji pada variabel respon yang berbeda.</p>
+      </div>
+      ")
+    }
+    
     
     df <- data.frame(
       perlakuan = as.factor(rv$data[[input$kol_perlakuan]]),
