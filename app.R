@@ -134,3 +134,43 @@ ui <- dashboardPage(
     )
   )
 )
+
+# ===============================
+# === SERVER
+# ===============================
+server <- function(input, output, session) {
+  rv <- reactiveValues(data=NULL, hasil_anova=NULL, anova_p=NULL, anova_p_kelompok=NULL, valid=FALSE)
+  
+  # DATA UPLOAD DAN PILIH KOLOM  
+  observeEvent(input$datafile, {
+    ext <- tools::file_ext(input$datafile$name)
+    df <- if (ext == "csv") read.csv(input$datafile$datapath) else read_excel(input$datafile$datapath)
+    rv$data <- df
+    output$pilih_kolom <- renderUI({
+      tagList(
+        selectInput("kol_perlakuan", "Kolom Perlakuan:", choices = names(rv$data)),
+        selectInput("kol_kelompok", "Kolom Kelompok/Blok:", choices = names(rv$data)),
+        selectInput("kol_respon", "Kolom Respon:", choices = names(rv$data))
+      )
+    })
+  })
+
+# CONTOH TABEL
+  output$contoh_tabel_struktur <- renderTable({
+    data.frame(
+      Kelompok = rep(c("Kelompok 1", "Kelompok 2", "Kelompok 3"), each = 3),
+      Perlakuan = rep(c("Pupuk A", "Pupuk B", "Pupuk C"), times = 3),
+      Tinggi_Tanaman = c(15.2, 17.1, 12.5,
+                         14.8, 16.9, 12.8,
+                         15.5, 17.5, 12.0)
+    )
+  })
+  
+  output$contoh_tabel <- renderTable({
+    data.frame(
+      "Kelompok ke-" = 1:3,
+      "Pupuk A" = c(15.2, 14.8, 15.5),
+      "Pupuk B" = c(17.1, 16.9, 17.5),
+      "Pupuk C" = c(12.5, 12.8, 12.0)
+    )
+  })
