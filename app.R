@@ -155,3 +155,22 @@ server <- function(input, output, session) {
     })
   })
 
+# CONTOH TABEL
+  output$contoh_tabel_struktur <- renderTable({
+    data.frame(
+      Kelompok = rep(c("Kelompok 1", "Kelompok 2", "Kelompok 3"), each = 3),
+      Perlakuan = rep(c("Pupuk A", "Pupuk B", "Pupuk C"), times = 3),
+      Tinggi_Tanaman = c(15.2, 17.1, 12.5,
+                         14.8, 16.9, 12.8,
+                         15.5, 17.5, 12.0)
+    )
+  })
+  
+  output$contoh_tabel <- renderTable({
+    data.frame(
+      "Kelompok ke-" = 1:3,
+      "Pupuk A" = c(15.2, 14.8, 15.5),
+      "Pupuk B" = c(17.1, 16.9, 17.5),
+      "Pupuk C" = c(12.5, 12.8, 12.0)
+    )
+  })
