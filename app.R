@@ -277,3 +277,124 @@ ui <- dashboardPage(
       "H1: Ada pengaruh kelompok"
     )
   })
+#UJI ANOVA & INTERPRETASI
+  output$anova_output <- renderPrint({
+    hasil <- aov(respon ~ perlakuan + kelompok, data = rv$data)
+    rv$hasil_anova <- hasil
+    
+    anova_table <- summary(hasil)[[1]]
+    rv$anova_p <- anova_table[["Pr(>F)"]][1]            # p-value Perlakuan
+    rv$anova_f <- anova_table[["F value"]][1]
+    rv$anova_p_kelompok <- anova_table[["Pr(>F)"]][2]   # p-value Kelompok
+    rv$anova_f_kelompok <- anova_table[["F value"]][2]
+    
+    cat("Tabel ANOVA (RAK):\n")
+    print(anova_table)
+    
+    cat("\nNilai Statistik Perlakuan:\n")
+    cat("F-hitung :", round(rv$anova_f, 4), "\n")
+    cat("p-value  :", format(rv$anova_p, 5), "\n")
+    
+    cat("\nNilai Statistik Kelompok:\n")
+    cat("F-hitung :", round(rv$anova_f_kelompok, 4), "\n")
+    cat("p-value  :", format(rv$anova_p_kelompok, 5), "\n")
+  })
+  
+  
+  output$keputusan_output <- renderPrint({
+    req(rv$anova_p, rv$anova_p_kelompok)
+    
+    cat("Keputusan Faktor Perlakuan:\n")
+    cat("p-value =", format(rv$anova_p, 5), "| alpha =", input$alpha, "\n")
+    if (rv$anova_p <= input$alpha) {
+      cat("Tolak H0: Ada pengaruh perlakuan terhadap respon.\n\n")
+    } else {
+      cat("Gagal tolak H0: Tidak ada pengaruh perlakuan terhadap respon.\n\n")
+    }
+    
+    cat("Keputusan Faktor Kelompok:\n")
+    cat("p-value =", format(rv$anova_p_kelompok, 5), "| alpha =", input$alpha, "\n")
+    if (rv$anova_p_kelompok <= input$alpha) {
+      cat("Tolak H0: Ada pengaruh kelompok terhadap respon.")
+    } else {
+      cat("Gagal tolak H0: Tidak ada pengaruh kelompok terhadap respon.")
+    }
+  })
+  
+  output$interpretasi_anova <- renderUI({
+    req(rv$anova_p, rv$anova_p_kelompok)
+    
+    # --- Blok kesimpulan Faktor PERLAKUAN ---
+    blok_perlakuan <- if (rv$anova_p <= input$alpha) {
+      paste0("
+      <div style='padding:12px; background:#e3fcec; border-left:5px solid #2ecc71; margin-bottom:14px;'>
+        <h4><b>Kesimpulan - Faktor Perlakuan:</b></h4>
+        <p>Terdapat <b>perbedaan yang signifikan</b> antara perlakuan (<i>p-value = ", format(rv$anova_p, 5), " < ", input$alpha, "</i>).</p>
+        <p>Karena H0 ditolak, maka dengan menggunakan tingkat signifikansi ", input$alpha * 100, "% dapat disimpulkan bahwa setidaknya ada satu perlakuan yang berbeda pengaruhnya terhadap respon.</p>
+
+        <h4><b>Interpretasi:</b></h4>
+        <p>Perlakuan yang diberikan <b>memiliki pengaruh nyata</b> terhadap nilai respon, setelah efek kelompok diperhitungkan dalam model.</p>
+
+        <h4><b>Saran:</b></h4>
+        <p>Lanjutkan ke <b>Uji Lanjut</b> untuk mengetahui pasangan perlakuan mana yang berbeda secara signifikan.</p>
+      </div>
+      ")
+    } else {
+      paste0("
+      <div style='padding:12px; background:#fdecea; border-left:5px solid #e74c3c; margin-bottom:14px;'>
+        <h4><b>Kesimpulan - Faktor Perlakuan:</b></h4>
+        <p>Tidak ditemukan perbedaan yang signifikan antar perlakuan (<i>p-value = ", format(rv$anova_p, 5), " >= ", input$alpha, "</i>).</p>
+
+        <h4><b>Interpretasi:</b></h4>
+        <p>Perlakuan yang diberikan <b>tidak terbukti mempengaruhi</b> nilai respon secara statistik.</p>
+
+        <h4><b>Saran:</b></h4>
+        <p>Tinjau kembali desain eksperimen atau coba uji pada variabel respon yang berbeda.</p>
+      </div>
+      ")
+    }
+    
+    # --- Blok kesimpulan Faktor KELOMPOK ---
+    blok_kelompok <- if (rv$anova_p_kelompok <= input$alpha) {
+      paste0("
+      <div style='padding:12px; background:#eaf4fc; border-left:5px solid #3498db;'>
+        <h4><b>Kesimpulan - Faktor Kelompok:</b></h4>
+        <p>Terdapat <b>perbedaan yang signifikan</b> antar kelompok (<i>p-value = ", format(rv$anova_p_kelompok, 5), " < ", input$alpha, "</i>).</p>
+        <p>Karena H0 ditolak, maka dengan menggunakan tingkat signifikansi ", input$alpha * 100, "% dapat disimpulkan bahwa setidaknya ada satu kelompok yang memberikan efek berbeda terhadap respon.</p>
+
+        <h4><b>Interpretasi:</b></h4>
+        <p>Pengelompokan (blocking) yang dilakukan <b>efektif</b> dalam menjelaskan keragaman data, sehingga penggunaan RAK pada percobaan ini sudah tepat.</p>
+      </div>
+      ")
+    } else {
+      paste0("
+      <div style='padding:12px; background:#f4f4f4; border-left:5px solid #95a5a6;'>
+        <h4><b>Kesimpulan - Faktor Kelompok:</b></h4>
+        <p>Tidak ditemukan perbedaan yang signifikan antar kelompok (<i>p-value = ", format(rv$anova_p_kelompok, 5), " >= ", input$alpha, "</i>).</p>
+
+        <h4><b>Interpretasi:</b></h4>
+        <p>Faktor kelompok <b>tidak terbukti berpengaruh nyata</b> terhadap respon. Pengelompokan mungkin kurang diperlukan pada data ini, namun kesimpulan untuk faktor perlakuan di atas tetap valid secara statistik.</p>
+      </div>
+      ")
+    }
+    
+    HTML(paste0(blok_perlakuan, blok_kelompok))
+  })
+  
+  output$lanjut_uji <- renderUI({
+    req(rv$anova_p <= input$alpha)
+    radioButtons("uji_lanjut", "Lakukan uji lanjut?", c("Tidak", "Ya"))
+  })
+  
+  output$lanjut_isi <- renderUI({
+    req(rv$hasil_anova, rv$anova_p <= input$alpha)
+    if (input$uji_lanjut == "Ya") {
+      tagList(
+        selectInput("jenis_uji", "Jenis Uji Lanjut:", choices = c("BNT", "BNJ", "Duncan")),
+        verbatimTextOutput("uji_lanjut_output"),
+        htmlOutput("interpretasi_lanjut")
+      )
+    } else {
+      h4("Anda tidak memilih untuk uji lanjut.")
+    }
+  })
