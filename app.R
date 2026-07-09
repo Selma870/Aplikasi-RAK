@@ -35,7 +35,7 @@ ui <- dashboardPage(
     ),
     
     tabItems(
-      # TAB 1: Penjelasan RAK di Menu
+      # Tab Penjelasan RAK di Menu
       tabItem(tabName = "tentang",
               fluidRow(
                 column(width = 6,
@@ -83,3 +83,54 @@ ui <- dashboardPage(
                 )
               ),
       ),
+      # Tab Validasi dataset
+      tabItem(tabName = "validasi",
+              fluidRow(
+                box(title = "Upload & Input", width = 4, status = "info",
+                    fileInput("datafile", "Upload file CSV atau Excel", accept = c(".csv", ".xlsx")),
+                    numericInput("alpha", "Nilai alpha:", 0.05, 0.001, 0.1, 0.001),
+                    uiOutput("pilih_kolom"),
+                    actionButton("validasi_btn", "Validasi Data")
+                ),
+                box(title = "Hasil Validasi", width = 8,
+                    verbatimTextOutput("validasi_output"),
+                    verbatimTextOutput("ringkasan_output"),
+                    tableOutput("tabel_kontingensi"),
+                    plotOutput("qqplot_data"),
+                    plotOutput("boxplot_data"),
+                    plotOutput("boxplot_kelompok")
+                )
+              )
+      ),
+      
+      # Tab Uji ANOVA dataset
+      tabItem(tabName = "uji",
+              fluidRow(
+                box(title = "Uji ANOVA", width = 6, status = "primary",
+                    uiOutput("ukuran_input"),
+                    verbatimTextOutput("hipotesis"),
+                    verbatimTextOutput("anova_output"),
+                    verbatimTextOutput("keputusan_output")
+                ),
+                box(title = "Lanjut ke Uji Lanjut?", width = 6,
+                    uiOutput("lanjut_uji")
+                )
+              ),
+              fluidRow(
+                box(title = "Interpretasi Hasil ANOVA", width = 12, status = "success", solidHeader = TRUE,
+                    htmlOutput("interpretasi_anova")
+                )
+              )
+      ),  
+      
+      # Tab Uji Lanjut
+      tabItem(tabName = "lanjut",
+              fluidRow(
+                box(title = "Hasil Uji Lanjut", width = 12,
+                    uiOutput("lanjut_isi")
+                )
+              )
+      )
+    )
+  )
+)
