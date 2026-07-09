@@ -134,3 +134,23 @@ ui <- dashboardPage(
     )
   )
 )
+
+# ===============================
+# === SERVER
+# ===============================
+server <- function(input, output, session) {
+  rv <- reactiveValues(data=NULL, hasil_anova=NULL, anova_p=NULL, anova_p_kelompok=NULL, valid=FALSE)
+  
+  # DATA UPLOAD DAN PILIH KOLOM  
+  observeEvent(input$datafile, {
+    ext <- tools::file_ext(input$datafile$name)
+    df <- if (ext == "csv") read.csv(input$datafile$datapath) else read_excel(input$datafile$datapath)
+    rv$data <- df
+    output$pilih_kolom <- renderUI({
+      tagList(
+        selectInput("kol_perlakuan", "Kolom Perlakuan:", choices = names(rv$data)),
+        selectInput("kol_kelompok", "Kolom Kelompok/Blok:", choices = names(rv$data)),
+        selectInput("kol_respon", "Kolom Respon:", choices = names(rv$data))
+      )
+    })
+  })
