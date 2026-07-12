@@ -1,4 +1,4 @@
-# 📊 Projek Akhir Komputasi Statistik - Analisis RAK - S124
+# 📊 Projek Akhir UAS Komputasi Statistik - Analisis RAK - S124
 > Kelompok 6 - Statistika 2024 B
 
 ---
