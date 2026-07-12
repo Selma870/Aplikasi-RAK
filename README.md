@@ -3,6 +3,23 @@
 
 ---
 
+## 👥 Anggota Kelompok
+
+| Nama Anggota | NIM |
+|:---:|:---:|
+| Naura Zandra Izdihar | 1314624038 |
+| Selma Anderiyanie | 1314624045 |
+| Muhamad Hafiz | 1314624047 |
+| Annisa Nurfitriah | 1314624060 |
+| Arfina Pratiwi | 1314624076 |
+
+---
+
+## 🔗 Link Aplikasi
+https://selmaanderiyanie.shinyapps.io/AplikasiRAK/ 
+
+---
+
 ## ✨ Deskripsi Singkat
 
 Aplikasi web ini dikembangkan menggunakan **R-Shiny** sebagai tugas akhir 
@@ -16,18 +33,6 @@ Analisis mencakup:
 - Uji ANOVA dua arah (perlakuan & kelompok)
 - Uji lanjut BNT, BNJ, dan Duncan
   
----
-
-## 👥 Anggota Kelompok
-
-| Nama Anggota | NIM |
-|:---:|:---:|
-| Naura Zandra Izdihar | 1314624038 |
-| Selma Anderiyanie | 1314624045 |
-| Muhamad Hafiz | 1314624047 |
-| Annisa Nurfitriah | 1314624060 |
-| Arfina Pratiwi | 1314624076 |
-
 ---
 
 ## 🚀 Fitur Aplikasi
